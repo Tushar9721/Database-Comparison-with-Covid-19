@@ -1,0 +1,56 @@
+<%- include("header") -%>
+
+<h1 class="heading">Covid-19</h1>
+
+<div class="row">
+  <div class="col-lg-6">
+    <h3>Mongo DB</h3>
+    <div class="container-1">
+      <div class="box-1 box">
+        <h4>Reading</h4>
+        <p id="readM">2345</p>
+      </div>
+      <div class="box-2 box">
+        <h4>Updating</h4>
+        <p id="upadM">2045</p>
+      </div>
+      <div class="box-3 box">
+        <h4>Deleting</h4>
+        <p id="delM">1345</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <h3>MySql DB</h3>
+    <div class="container-1">
+      <div class="box-1 box">
+        <h4>Reading</h4>
+        <p id="readS">345</p>
+      </div>
+      <div class="box-2 box">
+        <h4>Updating</h4>
+        <p id="upadS">145</p>
+      </div>
+      <div class="box-3 box">
+        <h4>Deleting</h4>
+        <p id="delS">450</p>
+      </div>
+    </div>
+  </div>
+</div>
+<h1 class="graph">Graph</h1>
+<div id="chartContainer"></div>
+
+<form action="/cases" method="get">
+  <input
+    type="image"
+    src="images/coronavirus.png"
+    name="image"
+    class="float"
+    onChange="this.form.submit()"
+  />
+</form>
+
+<script src="script/main.js"></script>
+
+<%- include("footer") -%>
