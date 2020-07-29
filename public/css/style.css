@@ -1,3 +1,12 @@
+::-webkit-scrollbar{
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb{
+  background: linear-gradient(transparent,#38aa9b);
+  border-radius: 6px;
+}
+
 body {
   margin: 0px;
   background-color: white;
@@ -34,6 +43,10 @@ p {
 
 #chartContainer {
   margin: 10px 10px;
+}
+
+#codeValue{
+  margin-left: 10px;
 }
 
 
@@ -88,7 +101,6 @@ p {
 }
 
 .cases-box {
-  border-right: 1px #ccc solid;
   border-left: 1px #ccc solid;
   transition: 0.6s;
 }
@@ -121,3 +133,14 @@ p {
 .float:hover {
   background-color: #393e46;
 }
+
+.scrollable-menu {
+  height: auto;
+  max-height: 200px;
+  overflow-x: hidden;
+}
+
+.dropdown{
+  margin-right: 10%;
+}
+

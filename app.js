@@ -2,7 +2,6 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const https = require("https");
-const { count } = require("console");
 
 const app = express();
 
@@ -14,7 +13,7 @@ app.use(express.static("public"));
 
 //getting the home route..
 app.get("/", function (req, res) {
-  
+  var countryCodes = [];
   https
     .get(
       "https://covid.ourworldindata.org/data/owid-covid-data.json",
@@ -28,24 +27,8 @@ app.get("/", function (req, res) {
 
         // The whole response has been received. Print out the result.
         resp.on("end", function () {
+          //parsing the data
           const covidData = JSON.parse(data);
-          console.log(covidData.length);
-          const countryData = covidData.CAN;
-          console.log(countryData.location);
-          console.log(countryData.population);
-          var i = 0;
-          var length = countryData.data.length;
-          console.log(countryData.data[length - 1].date);
-          console.log(countryData.data[length - 1].total_cases);
-
-          console.log(countryData.data[length - 2].date);
-          console.log(countryData.data[length - 2].total_cases);
-
-          //  // for loop to get the data from array.
-          //   for (i in countryData.data) {
-          //     console.log(countryData.data[i].date);
-          //     console.log(countryData.data[i].total_cases);
-          //   }
         });
       }
     )
@@ -55,11 +38,93 @@ app.get("/", function (req, res) {
   res.render("comparison");
 });
 
-
 //getting the cases request...
 app.get("/cases", function (req, res) {
-  res.render("cases");
+  var newCountryCodes = [];
+  var todayDate = 0;
+  var yesterdayDate = 0;
+  var countryName = "";
+  var todayTotalCases = 0;
+  var todayNewCases = 0;
+  var todayTotalDeaths = 0;
+  var todayNewDeaths = 0;
+  var yesterdayNewDeaths = 0;
+  var yesterdayTotalDeaths = 0;
+  var yesterdayTotalCases = 0;
+  var yesterdayNewCases = 0;
+  
+
+  https
+    .get(
+      "https://covid.ourworldindata.org/data/owid-covid-data.json",
+      (resp) => {
+        let data = "";
+
+        // A chunk of data has been recieved.
+        resp.on("data", function (chunk) {
+          data += chunk;
+        });
+
+        // The whole response has been received. Print out the result.
+        resp.on("end", function () {
+          //parsing the data
+          const covidData = JSON.parse(data);
+
+          //getting the country code
+          for (let i = 0; i < Object.keys(covidData).length; i++) {
+            newCountryCodes.push(Object.keys(covidData));
+          }
+          var countryCode = req.body.code;
+          console.log(countryCode);
+          var countryData= covidData.CAN;
+          // if(countryCode === " "){
+          //    countryData = covidData.CAN;
+          // }
+          // else{
+          //   countryData = covidData.countryCode;
+          // }
+          var lengthDate = countryData.data.length;
+          //setting country Name
+          countryName = countryData.location;
+          //setting dates
+          todayDate = countryData.data[lengthDate - 1].date;
+          yesterdayDate = countryData.data[lengthDate - 2].date;
+
+          //setting todays cases data
+          todayNewCases = countryData.data[lengthDate - 1].new_cases;
+          todayNewDeaths = countryData.data[lengthDate - 1].new_deaths;
+          todayTotalCases = countryData.data[lengthDate - 1].total_cases;
+          todayTotalDeaths = countryData.data[lengthDate - 1].total_deaths;
+
+          //setting yesterdays cases data
+          yesterdayNewCases = countryData.data[lengthDate - 2].new_cases;
+          yesterdayNewDeaths = countryData.data[lengthDate - 2].new_deaths;
+          yesterdayTotalCases = countryData.data[lengthDate - 2].total_cases;
+          yesterdayTotalDeaths = countryData.data[lengthDate - 2].total_deaths;
+          
+          res.render("cases", {
+            countryTitle: countryName,
+            newCountryCodes: newCountryCodes[0],
+            todayDate: todayDate,
+            yesterDayDate: yesterdayDate,
+            todayTotalDeath: todayTotalDeaths,
+            todayNewDeaths:todayNewDeaths,
+            todayTotalCases:todayTotalCases,
+            todayNewCases:todayNewCases,
+            yesterdayNewCases:yesterdayNewCases,
+            yesterdayNewDeaths:yesterdayNewDeaths,
+            yesterdayTotalCases:yesterdayTotalCases,
+            yesterdayTotalDeaths:yesterdayTotalDeaths
+          });
+        });
+      }
+    )
+    .on("error", (err) => {
+      console.log("Error: " + err.message);
+    });
+  // console.log(countryName);
 });
+
 
 let port = process.env.PORT;
 if (port == null || port == "") {
