@@ -1,23 +1,18 @@
 <%- include("header") -%>
 
-<nav class="navbar navbar-dark bg-dark justify-content-between">
-  <h1 class="navbar-brand">Covid-19</h1>
-  <form action="" method="get" class="form-inline">
-     <select id="myCountryCodes">
-          <div class="scrollable-menu">
-          <% newCountryCodes.forEach(item => { %>
-          <option value="<%= item %>"><%=item%></option>
-          <% });%>
-      </div>
-  </select>
-  <button type="button" class="btn btn-info" onclick="myFunction()">Try it</button>
-  </form>
-</nav>
-
 <div class="alert alert-warning alert-dismissible fade show">
   <i class="fa fa-warning"></i>
   <strong> Warning! If there is any emergency call 911</strong>. Let them know
   your symptoms.
+  <button type="button" class="close" data-dismiss="alert">&times;</button>
+</div>
+
+<div class="alert alert-danger alert-dismissible fade show">
+  <i class="fa fa-exclamation"></i>
+  Visit
+  <a href="https://ca.thrive.health/covid19/en"
+    >Self assement by government of Canada</a
+  >
   <button type="button" class="close" data-dismiss="alert">&times;</button>
 </div>
 
@@ -66,6 +61,5 @@
     </div>
   </div>
 </div>
-<script src="script/main.js"></script>
 
 <%- include("footer") -%>

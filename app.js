@@ -2,7 +2,6 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const https = require("https");
-
 const app = express();
 
 app.set("view engine", "ejs");
@@ -52,7 +51,6 @@ app.get("/cases", function (req, res) {
   var yesterdayTotalDeaths = 0;
   var yesterdayTotalCases = 0;
   var yesterdayNewCases = 0;
-  
 
   https
     .get(
@@ -74,18 +72,12 @@ app.get("/cases", function (req, res) {
           for (let i = 0; i < Object.keys(covidData).length; i++) {
             newCountryCodes.push(Object.keys(covidData));
           }
-          var countryCode = req.body.code;
-          console.log(countryCode);
-          var countryData= covidData.CAN;
-          // if(countryCode === " "){
-          //    countryData = covidData.CAN;
-          // }
-          // else{
-          //   countryData = covidData.countryCode;
-          // }
+          countryData = covidData.CAN;
           var lengthDate = countryData.data.length;
+
           //setting country Name
           countryName = countryData.location;
+
           //setting dates
           todayDate = countryData.data[lengthDate - 1].date;
           yesterdayDate = countryData.data[lengthDate - 2].date;
@@ -101,20 +93,20 @@ app.get("/cases", function (req, res) {
           yesterdayNewDeaths = countryData.data[lengthDate - 2].new_deaths;
           yesterdayTotalCases = countryData.data[lengthDate - 2].total_cases;
           yesterdayTotalDeaths = countryData.data[lengthDate - 2].total_deaths;
-          
+
           res.render("cases", {
             countryTitle: countryName,
-            newCountryCodes: newCountryCodes[0],
+            //newCountryCodes: newCountryCodes[0],
             todayDate: todayDate,
             yesterDayDate: yesterdayDate,
             todayTotalDeath: todayTotalDeaths,
-            todayNewDeaths:todayNewDeaths,
-            todayTotalCases:todayTotalCases,
-            todayNewCases:todayNewCases,
-            yesterdayNewCases:yesterdayNewCases,
-            yesterdayNewDeaths:yesterdayNewDeaths,
-            yesterdayTotalCases:yesterdayTotalCases,
-            yesterdayTotalDeaths:yesterdayTotalDeaths
+            todayNewDeaths: todayNewDeaths,
+            todayTotalCases: todayTotalCases,
+            todayNewCases: todayNewCases,
+            yesterdayNewCases: yesterdayNewCases,
+            yesterdayNewDeaths: yesterdayNewDeaths,
+            yesterdayTotalCases: yesterdayTotalCases,
+            yesterdayTotalDeaths: yesterdayTotalDeaths,
           });
         });
       }
@@ -125,6 +117,9 @@ app.get("/cases", function (req, res) {
   // console.log(countryName);
 });
 
+app.post("/case", function (req, res) {
+ 
+});
 
 let port = process.env.PORT;
 if (port == null || port == "") {

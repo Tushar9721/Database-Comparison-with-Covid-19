@@ -10,6 +10,7 @@ var delSql = parseInt(document.getElementById("delS").innerHTML);
 
 function myFunction() {
   var code = document.getElementById("myCountryCodes").value;
+  document.getElementById("custId").innerHTML = code;
   console.log(code);
   }
 
