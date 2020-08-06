@@ -12,24 +12,24 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-var mysqlConnection = mysql.createConnection({
-  host:"localhost",
-  user: "root",
-  password:"root",
-  database: "database",
-  insecureAuth: true
-});
+// var mysqlConnection = mysql.createConnection({
+//   host:"localhost",
+//   user: "root",
+//   password:"root",
+//   database: "database",
+//   insecureAuth: true
+// });
 
-mysqlConnection.connect((err)=>{
+// mysqlConnection.connect((err)=>{
 
-  if(!err){
-    console.log("Done");
-  }
-  else{
-    console.log(err);
-  }
+//   if(!err){
+//     console.log("Done");
+//   }
+//   else{
+//     console.log(err);
+//   }
 
-});
+//});
 // //connecting with mongo
 // mongoose.connect("mongodb://localhost:27017/covidDB", {
 //   useNewUrlParser: true,
