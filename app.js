@@ -3,6 +3,9 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const https = require("https");
 const mysql = require("mysql");
+const performance = require("perf_hooks").performance;
+const { JSDOM } = require("jsdom");
+const { window } = new JSDOM();
 
 const app = express();
 
@@ -12,63 +15,142 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-// var mysqlConnection = mysql.createConnection({
-//   host:"localhost",
-//   user: "root",
-//   password:"root",
-//   database: "database",
-//   insecureAuth: true
-// });
+//creating sql connection..
+var mysqlConnection = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "password",
+  database: "covid",
+  insecureAuth: true,
+});
 
-// mysqlConnection.connect((err)=>{
+//checking sql connection..
+mysqlConnection.connect((err) => {
+  if (!err) {
+    console.log("Done Done");
+  } else {
+    console.log(err);
+  }
+});
 
-//   if(!err){
-//     console.log("Done");
-//   }
-//   else{
-//     console.log(err);
-//   }
+//connecting with mongo..
+mongoose.connect("mongodb://localhost:27017/covidDatabase", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
-//});
-// //connecting with mongo
-// mongoose.connect("mongodb://localhost:27017/covidDB", {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-// });
+//creating mongo schema..
+const caseSChema = {
+  countryName: String,
+  date: String,
+  recentCases: String,
+  recentDeaths: String,
+};
 
-// //creating schema
-// const caseSChema = {
-//   countryName: String,
-//   date: String,
-//   recentCases: String,
-//   lastCases: String,
-//   recetnDeaths: String,
-//   lastDeath: String,
-// };
-
-// const Case = mongoose.model("Case", caseSChema);
+//creating mongoose model..
+const Case = mongoose.model("Case", caseSChema);
 
 //getting the home route..
 app.get("/", function (req, res) {
+  https
+    .get(
+      "https://covid.ourworldindata.org/data/owid-covid-data.json",
+      (resp) => {
+        let data = "";
 
-  res.render("comparison");
+        // A chunk of data has been recieved.
+        resp.on("data", function (chunk) {
+          data += chunk;
+        });
 
-  // const covid_case = new Case({
-  //   countryName: "India",
-  //   date: "202020",
-  //   recentCases: "20202",
-  //   lastCases: "1202",
-  //   recetnDeaths: "12",
-  //   lastDeath: "23",
-  // });
+        // The whole response has been received. Print out the result.
+        resp.on("end", function () {
+          //parsing the data
+          const covidData = JSON.parse(data);
+          var casesValue = Object.values(covidData);
+          var totalCases;
+          var totalDeaths;
+          var locationName;
+          var date;
+          var insertMongoTimeStart = 0;
+          var insertSqlTimeStart = 0;
+          var insertMongoTimeEnd = 0;
+          var insertSqlTimeEnd = 0;
+          var insertMongoTimeTotal = 0;
+          var insertSqlTimeTotal = 0;
 
-  // covid_case.save(function (err) {
-  //   if (!err) {
-  //     console.log("DOne");
-  //     res.render("comparison");
-  //   }
-  // });
- 
+          for (let i = 0; i < Object.keys(covidData).length; i++) {
+            //getting the data into variable from api..
+            locationName = casesValue[i].location;
+            date = casesValue[i].data[casesValue[i].data.length - 1].date;
+            totalCases =
+              casesValue[i].data[casesValue[i].data.length - 1].total_cases;
+            totalDeaths =
+              casesValue[i].data[casesValue[i].data.length - 1].total_deaths;
+
+            //start time of mongo..
+            insertMongoTimeStart = window.performance.now();
+            //inserting into mongoDB..
+            const covid_case = new Case({
+              countryName: locationName,
+              date: date,
+              recentCases: totalCases,
+              recentDeaths: totalDeaths,
+            });
+
+            //calculating the time to run mongo query..
+            insertMongoTimeEnd = window.performance.now();
+            insertMongoTimeTotal =
+              insertMongoTimeTotal +
+              (insertMongoTimeEnd - insertMongoTimeStart);
+
+            //saving data into mongoDB..
+            covid_case.save(function (err) {
+              if (err) {
+                console.log(err);
+              }
+            });
+
+            //start time of sql..
+            insertSqlTimeStart = window.performance.now();
+            //inserting in MySQL..
+            var sql =
+              "insert into casestable values(null,'" +
+              locationName +
+              "','" +
+              date +
+              "','" +
+              totalCases +
+              "','" +
+              totalDeaths +
+              "')";
+
+            mysqlConnection.query(sql, function (err) {
+              if (err) {
+                console.log("MySql Error: " + err);
+              }
+            });
+            //calculating the time to run mysql query..
+            insertSqlTimeEnd = window.performance.now();
+            insertSqlTimeTotal =
+              insertSqlTimeTotal + (insertSqlTimeEnd - insertSqlTimeStart);
+
+            i++;
+          }
+          var checkLength = Object.keys(covidData).length / 2;
+          console.log("Mongo Insert Time: " + insertMongoTimeTotal);
+          console.log("MySql Insert Time: " + insertSqlTimeTotal);
+
+          res.render("comparison", {
+            insertM: (insertMongoTimeTotal*100).toFixed(2),
+            insertS: (insertSqlTimeTotal*100).toFixed(2),
+          });
+        });
+      }
+    )
+    .on("error", (err) => {
+      console.log("Error: " + err.message);
+    });
 });
 
 //getting the cases request...
