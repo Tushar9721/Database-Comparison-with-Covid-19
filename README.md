@@ -20,5 +20,5 @@ For video demonstration visit this [ link ](https://drive.google.com/file/d/1h1P
 
 ## Resources
 * Used [OWID](https://github.com/owid) to get the covid data
-* COVID-19 data [link] (https://covid.ourworldindata.org/data/owid-covid-data.json)
+* COVID-19 data [link](https://covid.ourworldindata.org/data/owid-covid-data.json)
 
