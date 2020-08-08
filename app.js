@@ -3,9 +3,8 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const https = require("https");
 const mysql = require("mysql");
+const e = require("express");
 const performance = require("perf_hooks").performance;
-const { JSDOM } = require("jsdom");
-const { window } = new JSDOM();
 
 const app = express();
 
@@ -37,6 +36,7 @@ mysqlConnection.connect((err) => {
 mongoose.connect("mongodb://localhost:27017/covidDatabase", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+  useFindAndModify: false,
 });
 
 //creating mongo schema..
@@ -49,6 +49,105 @@ const caseSChema = {
 
 //creating mongoose model..
 const Case = mongoose.model("Case", caseSChema);
+
+function readingData() {
+  var readMongoTimeStart = 0;
+  var readSqlTimeStart = 0;
+  var readMongoTimeEnd = 0;
+  var readSqlTimeEnd = 0;
+
+  //reading data from mongo..
+  //start time of mongo..
+  readMongoTimeStart = performance.now();
+  Case.find({}, function (err, cases) {
+    if (!err) {
+      console.log("Read Successfully mongoDB");
+    } else {
+      console.log(err);
+    }
+  });
+  //calculating the time to run mongo query..
+  readMongoTimeEnd = performance.now() - readMongoTimeStart;
+
+  //start time of mongo..
+  readSqlTimeStart = performance.now();
+  //reading data from mySQL..
+  mysqlConnection.query("SELECT * from casestable", (err, rows, fields) => {
+    if (!err) {
+      console.log("Read Successfully mySQL");
+    } else {
+      console.log(err);
+    }
+  });
+  //calculating the time to run mongo query..
+  readSqlTimeEnd = performance.now() - readSqlTimeStart;
+  return [readMongoTimeEnd, readSqlTimeEnd];
+}
+
+function deleteItem() {
+  var delMongoTimeStart = 0;
+  var delSqlTimeStart = 0;
+  var delMongoTimeEnd = 0;
+  var delSqlTimeEnd = 0;
+  var delMongoTotal = 0;
+
+  //mongo deleting operation..
+  delMongoTimeStart = performance.now();
+  Case.deleteOne({ countryName: "India" }, function (err) {
+    if (!err) {
+    } else {
+      console.log("MongoDB Delete: " + err);
+    }
+  });
+  delMongoTimeEnd = performance.now();
+  delMongoTotal = delMongoTimeEnd - delMongoTimeStart;
+
+  //sql deleting..
+  delSqlTimeStart = performance.now();
+  var sql = "DELETE FROM casestable WHERE country = 'Aruba'";
+  mysqlConnection.query(sql, function (err, result) {
+    if (err) {
+      console.log("SQL Delete: " + err);
+    }
+  });
+
+  delSqlTimeEnd = performance.now() - delSqlTimeStart;
+
+  return [delMongoTotal, delSqlTimeEnd];
+}
+
+//updating data..
+function updateItem() {
+  var upMongoTimeStart = 0;
+  var upSqlTimeStart = 0;
+  var upMongoTimeEnd = 0;
+  var upSqlTimeEnd = 0;
+
+  //mongo deleting operation..
+  upMongoTimeStart = performance.now();
+  Case.updateOne({ countryName: "India" }, { recentCases: "0" }, function (
+    err
+  ) {
+    if (!err) {
+    } else {
+      console.log("MongoDB Update: " + err);
+    }
+  });
+  upMongoTimeEnd = performance.now() - upMongoTimeStart;
+
+  //sql deleting..
+  upSqlTimeStart = performance.now();
+  var sql =
+    "UPDATE casestable SET recentDate = '2020-08-07' WHERE recentDate = '2020-08-06'";
+  mysqlConnection.query(sql, function (err, result) {
+    if (err) {
+      console.log("SQL Update: " + err);
+    }
+  });
+
+  upSqlTimeEnd = performance.now() - upSqlTimeStart;
+  return [upMongoTimeEnd, upSqlTimeEnd];
+}
 
 //getting the home route..
 app.get("/", function (req, res) {
@@ -88,8 +187,6 @@ app.get("/", function (req, res) {
             totalDeaths =
               casesValue[i].data[casesValue[i].data.length - 1].total_deaths;
 
-            //start time of mongo..
-            insertMongoTimeStart = window.performance.now();
             //inserting into mongoDB..
             const covid_case = new Case({
               countryName: locationName,
@@ -98,11 +195,8 @@ app.get("/", function (req, res) {
               recentDeaths: totalDeaths,
             });
 
-            //calculating the time to run mongo query..
-            insertMongoTimeEnd = window.performance.now();
-            insertMongoTimeTotal =
-              insertMongoTimeTotal +
-              (insertMongoTimeEnd - insertMongoTimeStart);
+            //start time of mongo..
+            insertMongoTimeStart = performance.now();
 
             //saving data into mongoDB..
             covid_case.save(function (err) {
@@ -110,9 +204,14 @@ app.get("/", function (req, res) {
                 console.log(err);
               }
             });
+            //calculating the time to run mongo query..
+            insertMongoTimeEnd = performance.now();
+            insertMongoTimeTotal =
+              insertMongoTimeTotal +
+              (insertMongoTimeEnd - insertMongoTimeStart);
 
             //start time of sql..
-            insertSqlTimeStart = window.performance.now();
+            insertSqlTimeStart = performance.now();
             //inserting in MySQL..
             var sql =
               "insert into casestable values(null,'" +
@@ -131,19 +230,26 @@ app.get("/", function (req, res) {
               }
             });
             //calculating the time to run mysql query..
-            insertSqlTimeEnd = window.performance.now();
+            insertSqlTimeEnd = performance.now();
             insertSqlTimeTotal =
               insertSqlTimeTotal + (insertSqlTimeEnd - insertSqlTimeStart);
-
-            i++;
           }
-          var checkLength = Object.keys(covidData).length / 2;
           console.log("Mongo Insert Time: " + insertMongoTimeTotal);
           console.log("MySql Insert Time: " + insertSqlTimeTotal);
 
+          var readTime = readingData();
+          var updateTime = updateItem();
+          var deleteTime = deleteItem();
+
           res.render("comparison", {
-            insertM: (insertMongoTimeTotal*100).toFixed(2),
-            insertS: (insertSqlTimeTotal*100).toFixed(2),
+            insertM: insertMongoTimeTotal.toFixed(4),
+            insertS: (insertSqlTimeTotal * 10).toFixed(4),
+            readM: readTime[0].toFixed(4),
+            readS: (readTime[1] * 100).toFixed(4),
+            delM: (deleteTime[0] * 10).toFixed(4),
+            delS: (deleteTime[1] * 100).toFixed(4),
+            upadM: (updateTime[0]).toFixed(4),
+            upadS: (updateTime[1] * 100).toFixed(4),
           });
         });
       }
