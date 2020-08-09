@@ -20,14 +20,14 @@ For video demonstration visit the links mentioned below.
 
 ### Part I
 Visit to this [ link ](https://drive.google.com/file/d/1h1PkH0X0VGV1DuaDtKBtAZpa3Tj14Wc3/view?usp=sharing)
-* Values is this video is static.
-* Connection with MySQL was not made.
+* Values in this video are static.
+* Connection with MySQL was not implemented.
 
 ### Part II (FINAL)
 Visit to this [ link ](https://drive.google.com/file/d/15KP7XKnGoz8nKzZ_pzG_yIuQ6lxDWT3B/view?usp=sharing)
-* Values is this video is dynamic.
-* Connection with both the databases were made.
-* Performing CURD actions on both the databases.
+* Values in this video are dynamic.
+* Connection with both the databases were implemented.
+* Performing CURD operations on both the databases.
 
 ## Resources
 * Used [OWID](https://github.com/owid) to get the covid data
