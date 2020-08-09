@@ -48,7 +48,7 @@ window.onload = function () {
         name: "SQL",
         lineColor: "DarkSlateGray",
         showInLegend: true,
-        indexLabelFontSize: 6,
+        indexLabelFontSize: 16,
         dataPoints: [
           {
             label: "Inserting",

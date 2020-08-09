@@ -3,7 +3,6 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const https = require("https");
 const mysql = require("mysql");
-const e = require("express");
 const performance = require("perf_hooks").performance;
 
 const app = express();
@@ -248,7 +247,7 @@ app.get("/", function (req, res) {
             readS: (readTime[1] * 100).toFixed(4),
             delM: (deleteTime[0] * 10).toFixed(4),
             delS: (deleteTime[1] * 100).toFixed(4),
-            upadM: (updateTime[0]).toFixed(4),
+            upadM: updateTime[0].toFixed(4),
             upadS: (updateTime[1] * 100).toFixed(4),
           });
         });
